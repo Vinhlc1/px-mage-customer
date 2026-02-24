@@ -28,31 +28,43 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
-      login(loginEmail, loginPassword);
-      setIsLoading(false);
+    try {
+      await login(loginEmail, loginPassword);
       toast({
         title: "Welcome back!",
         description: "You've successfully logged in.",
       });
       onClose();
-    }, 1500);
+    } catch (err) {
+      toast({
+        title: "Login failed",
+        description: err instanceof Error ? err.message : "Invalid email or password",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    setTimeout(() => {
-      register(registerUsername, registerEmail, registerPassword);
-      setIsLoading(false);
+    try {
+      await register(registerUsername, registerEmail, registerPassword);
       toast({
         title: "Account created!",
         description: "Welcome to Pandoora.",
       });
       onClose();
-    }, 1500);
+    } catch (err) {
+      toast({
+        title: "Registration failed",
+        description: err instanceof Error ? err.message : "Could not create account",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

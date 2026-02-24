@@ -5,7 +5,6 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { User, Package, History, Settings, MessageCircle } from "lucide-react";
-import { cards } from "@/data/cards";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { usePurchaseHistory } from "@/contexts/PurchaseHistoryContext";
@@ -16,6 +15,23 @@ import InventoryTab from "@/components/profile/InventoryTab";
 import PostsTab from "@/components/profile/PostsTab";
 import PurchaseHistoryTab from "@/components/profile/PurchaseHistoryTab";
 import SettingsTab from "@/components/profile/SettingsTab";
+import { updateAccount } from "@/lib/api/accounts";
+import { Card } from "@/types/card";
+import { BePhysicalCard } from "@/lib/api/collections";
+
+function mapPhysicalCard(c: BePhysicalCard): Card {
+  return {
+    id: String(c.cardId),
+    cardId: c.cardId,
+    nfcUuid: c.nfcUuid,
+    name: `Card #${c.cardId}`,
+    mythology: "PixelMage",
+    image: "/placeholder-card.png",
+    rarity: "Common",
+    price: 0,
+    nfcEnabled: true,
+  };
+}
 
 const Profile = () => {
   const router = useRouter();
@@ -23,26 +39,32 @@ const Profile = () => {
   const defaultTab = searchParams?.get("tab") || "profile";
   
   const { user, logout } = useAuth();
-  const { collection } = useCollection();
+  const { collection, ownedCards } = useCollection();
   const { orders } = usePurchaseHistory();
   const { getUserPosts } = useCommunity();
   
   const [username, setUsername] = useState(user?.username || "MysticSeeker");
   const [email, setEmail] = useState(user?.email || "user@example.com");
   
-  // Get user cards from collection context
-  const userCards = cards.filter(card => collection.purchasedCards.includes(card.id));
+  // Build FE card array from real owned cards
+  const userCards: Card[] = ownedCards.map(mapPhysicalCard);
   
   // Get user's posts
   const userPosts = getUserPosts(user?.username || "MysticSeeker");
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout().catch(() => {});
     router.push("/");
   };
 
-  const handleSaveProfile = () => {
-    // TODO: Implement profile save logic
+  const handleSaveProfile = async () => {
+    if (!user?.customerId) return;
+    try {
+      await updateAccount(user.customerId, { name: username, email });
+      // Optionally show toast
+    } catch (err) {
+      console.error("Failed to save profile", err);
+    }
   };
 
   return (

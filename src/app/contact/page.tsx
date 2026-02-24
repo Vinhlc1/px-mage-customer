@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import DevNotice from "@/components/DevNotice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -18,6 +19,7 @@ const Contact = () => {
     <div className="min-h-screen bg-background">
       <div className="starfield" />
       <Navbar />
+      <DevNotice feature="Contact" description="form gửi mail chưa có API — đang dùng dữ liệu mẫu." />
       
       <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
         <div className="text-center mb-8 sm:mb-10 md:mb-12">

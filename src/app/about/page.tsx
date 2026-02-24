@@ -1,6 +1,7 @@
 "use client";
 
 import Navbar from "@/components/Navbar";
+import DevNotice from "@/components/DevNotice";
 import { Sparkles, Shield, Zap } from "lucide-react";
 
 const About = () => {
@@ -8,6 +9,7 @@ const About = () => {
     <div className="min-h-screen bg-background">
       <div className="starfield" />
       <Navbar />
+      <DevNotice feature="About" description="trang tĩnh — chưa có API." />
       
       <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
         <div className="max-w-4xl mx-auto text-center mb-8 sm:mb-10 md:mb-12">

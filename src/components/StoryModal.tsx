@@ -5,6 +5,7 @@ import { Lock, Sparkles, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { formatVND } from "@/lib/utils";
 
 interface StoryModalProps {
   card: Card | null;
@@ -107,7 +108,7 @@ const StoryModal = ({ card, isOpen, onClose, onLoginRequired, isAuthenticated }:
                 <div className="flex-1">
                   <h3 className="text-2xl font-serif mb-2">{card.name}</h3>
                   <p className="text-muted-foreground mb-1">Rarity: <Badge>{card.rarity}</Badge></p>
-                  <p className="text-3xl font-bold text-primary mb-4">${card.price}</p>
+                  <p className="text-3xl font-bold text-primary mb-4">{formatVND(card.price)}</p>
                   {card.stock && card.stock < 10 && (
                     <p className="text-sm text-destructive mb-4 animate-pulse">
                       ⚡ Limited Edition - Only {card.stock} remaining

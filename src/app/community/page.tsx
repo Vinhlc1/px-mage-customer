@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
+import DevNotice from "@/components/DevNotice";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,6 +116,7 @@ const Community = () => {
     <div className="min-h-screen bg-background">
       <div className="starfield" />
       <Navbar />
+      <DevNotice feature="Community" description="chưa có API — đang dùng dữ liệu mẫu từ context." />
       
       <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
         <div className="max-w-4xl mx-auto">

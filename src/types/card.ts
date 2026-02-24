@@ -3,20 +3,23 @@ import { StaticImageData } from "next/image";
 export type CardRarity = 'Common' | 'Rare' | 'Epic' | 'Legendary';
 
 export interface Card {
-  id: string;
-  name: string;
-  mythology: string;
-  image: string | StaticImageData;
-  rarity: CardRarity;
-  price: number;
-  story: {
+  id: string;                      // BE: cardTemplateId.toString() or physical cardId.toString()
+  templateId?: number;             // BE: cardTemplateId (for marketplace)
+  cardId?: number;                 // BE: physical card cardId (for owned cards)
+  nfcUuid?: string;                // BE: physical card nfcUuid
+  name: string;                    // BE: template.name
+  mythology: string;               // BE: template.description or 'PixelMage Collection'
+  image: string | StaticImageData; // BE: template.designPath or placeholder
+  rarity: CardRarity;              // Default 'Common' if not from BE
+  price: number;                   // BE: price tier pricePerUnit
+  story?: {                        // Optional; BE description as fallback
     preview: string;
     full: string;
   };
-  nfcEnabled: boolean;
-  stock?: number;
-  seriesId?: string; // ID của series câu chuyện
-  seriesOrder?: number; // Thứ tự trong series
+  nfcEnabled: boolean;             // Always true for BE cards
+  stock?: number;                  // BE: count of physical cards in template.cards
+  seriesId?: string;               // Legacy (not from BE)
+  seriesOrder?: number;            // Legacy (not from BE)
 }
 
 export interface CartItem {

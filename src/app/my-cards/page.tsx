@@ -7,29 +7,39 @@ import { useRouter } from "next/navigation";
 import NFCScanModal from "@/components/NFCScanModal";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cards } from "@/data/cards";
 import { Card } from "@/types/card";
 import { useCollection } from "@/contexts/CollectionContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { Waves, ShoppingBag, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { BePhysicalCard } from "@/lib/api/collections";
+
+/** Map a BE physical card to the FE Card type */
+function mapPhysicalCard(c: BePhysicalCard): Card {
+  return {
+    id: String(c.cardId),
+    cardId: c.cardId,
+    nfcUuid: c.nfcUuid,
+    name: `Card #${c.cardId}`,
+    mythology: "PixelMage",
+    image: "/placeholder-card.png",
+    rarity: "Common",
+    price: 0,
+    nfcEnabled: true,
+  };
+}
 
 const MyCards = () => {
   const router = useRouter();
-  const { collection, hasPurchased } = useCollection();
+  const { collection, hasPurchased, ownedCards, isLoading: isLoadingCards } = useCollection();
   const { isAuthenticated } = useAuth();
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [isNFCScanModalOpen, setIsNFCScanModalOpen] = useState(false);
 
+  // Use real owned cards from BE
+  const purchasedCards: Card[] = ownedCards.map(mapPhysicalCard);
+
   const handleNFCScan = (card: Card) => {
-    if (!hasPurchased(card.id)) {
-      toast({
-        title: "Chưa mua thẻ",
-        description: "Bạn cần mua thẻ này trước khi có thể quét NFC",
-        variant: "destructive",
-      });
-      return;
-    }
     setSelectedCard(card);
     setIsNFCScanModalOpen(true);
   };
@@ -40,8 +50,6 @@ const MyCards = () => {
       description: "Thẻ đã được xác thực và thêm vào bộ sưu tập",
     });
   };
-
-  const purchasedCards = cards.filter(card => hasPurchased(card.id));
 
   if (!isAuthenticated) {
     return (
@@ -82,7 +90,9 @@ const MyCards = () => {
           </p>
           <div className="flex flex-wrap justify-center gap-3 sm:gap-6">
             <div className="bg-primary/10 border border-primary/30 rounded-lg px-4 sm:px-6 py-2 sm:py-3">
-              <p className="text-2xl sm:text-3xl font-bold text-primary">{purchasedCards.length}</p>
+              <p className="text-2xl sm:text-3xl font-bold text-primary">
+                {isLoadingCards ? "..." : purchasedCards.length}
+              </p>
               <p className="text-xs sm:text-sm text-muted-foreground">Thẻ đã mua</p>
             </div>
             <div className="bg-secondary/10 border border-secondary/30 rounded-lg px-4 sm:px-6 py-2 sm:py-3">
@@ -93,7 +103,9 @@ const MyCards = () => {
         </div>
 
         {/* Cards Grid */}
-        {purchasedCards.length > 0 ? (
+        {isLoadingCards ? (
+          <div className="text-center py-20 text-muted-foreground">Loading your cards...</div>
+        ) : purchasedCards.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
             {purchasedCards.map((card) => (
               <div

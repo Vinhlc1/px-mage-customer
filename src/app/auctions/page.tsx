@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import DevNotice from "@/components/DevNotice";
+import { formatVND } from "@/lib/utils";
 import Image from "next/image";
 import BidModal from "@/components/BidModal";
 import AuctionAnalyticsModal from "@/components/AuctionAnalyticsModal";
@@ -42,6 +44,7 @@ const Auctions = () => {
     <div className="min-h-screen bg-background">
       <div className="starfield" />
       <Navbar />
+      <DevNotice feature="Auctions" description="chưa có API — đang dùng dữ liệu mẫu." />
       
       <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
         <div className="text-center mb-8 sm:mb-10 md:mb-12">
@@ -102,11 +105,11 @@ const Auctions = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-muted-foreground">Current Bid:</span>
                     <span className="text-2xl font-bold text-primary">
-                      ${auction.currentBid.toFixed(2)}
+                      {formatVND(auction.currentBid)}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Starting: ${auction.startingBid.toFixed(2)}</span>
+                    <span>Starting: {formatVND(auction.startingBid)}</span>
                     <span>{auction.totalBids} bids</span>
                   </div>
                 </div>

@@ -1,30 +1,43 @@
-import { Moon, ShoppingCart, User, Menu, X } from "lucide-react";
+import { Moon, ShoppingCart, User, Menu, LogOut, LayoutDashboard, Clock } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
-import LoginModal from "@/components/LoginModal";
+import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Navbar = () => {
   const router = useRouter();
   const { getCartCount } = useCart();
-  const { user, isAuthenticated } = useAuth();
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
   const cartCount = getCartCount();
 
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 10);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
   const navLinks = [
-    { href: "/", label: "Home" },
-    { href: "/about", label: "About" },
-    { href: "/marketplace", label: "Cards" },
-    { href: "/my-cards", label: "My Cards" },
-    { href: "/collection", label: "Collection" },
-    { href: "/community", label: "Community" },
-    { href: "/auctions", label: "Auctions" },
-    { href: "/contact", label: "Contact" },
+    { href: "/", label: "Trang chủ" },
+    { href: "/about", label: "Giới thiệu" },
+    { href: "/marketplace", label: "Thẻ bài" },
+    { href: "/my-cards", label: "Thẻ của tôi" },
+    { href: "/collection", label: "Bộ sưu tập" },
+    { href: "/community", label: "Cộng đồng" },
+    { href: "/auctions", label: "Đấu giá" },
+    { href: "/contact", label: "Liên hệ" },
   ];
 
   const handleNavClick = () => {
@@ -33,25 +46,12 @@ const Navbar = () => {
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="bg-secondary/20 border-b border-border hidden lg:block">
-        <div className="container mx-auto px-4 py-2 flex justify-between items-center text-xs xl:text-sm text-muted-foreground">
-          <div className="flex gap-3 lg:gap-4 xl:gap-6">
-            <span className="hidden xl:inline">📍 Tukad Balian No.19 Denpasar, Bali</span>
-            <span className="xl:hidden">📍 Denpasar, Bali</span>
-            <span className="hidden lg:inline">✉️ pandoora@domain.com</span>
-            <span className="hidden lg:inline">📞 +62-311-89-90-19</span>
-          </div>
-          <div className="flex gap-3 lg:gap-4">
-            <a href="#" className="hover:text-primary transition-colors">Twitter</a>
-            <a href="#" className="hover:text-primary transition-colors">Facebook</a>
-            <a href="#" className="hover:text-primary transition-colors">Instagram</a>
-          </div>
-        </div>
-      </div>
-
       {/* Main Navbar */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-md border-b border-border">
+      <nav className={`sticky top-0 z-50 border-b transition-all duration-300 ${
+          scrolled
+            ? "bg-background/60 backdrop-blur-md border-border/50 shadow-lg shadow-black/10"
+            : "bg-background border-border"
+        }`}>
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
             {/* Mobile Menu Button */}
@@ -88,36 +88,44 @@ const Navbar = () => {
                       <>
                         <div className="flex items-center gap-2 px-3 py-2 bg-primary/10 rounded-lg">
                           <User className="w-5 h-5 text-primary" />
-                          <span className="text-sm font-medium">Hi, {user?.username}</span>
+                          <span className="text-sm font-medium">Xin chào, {user?.username}</span>
                         </div>
                         <Link
                           href="/profile"
                           onClick={handleNavClick}
                           className="block text-lg font-medium text-foreground hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-primary/10"
                         >
-                          My Profile
+                          Hồ sơ của tôi
                         </Link>
+                        <Link
+                          href="/profile?tab=history"
+                          onClick={handleNavClick}
+                          className="block text-lg font-medium text-foreground hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-primary/10"
+                        >
+                          Đơn hàng
+                        </Link>
+                        <button
+                          onClick={async () => { handleNavClick(); await logout(); }}
+                          className="flex items-center gap-2 w-full text-lg font-medium text-destructive hover:text-destructive/80 transition-colors py-2 px-3 rounded-lg hover:bg-destructive/10 text-left"
+                        >
+                          <LogOut className="w-5 h-5" />
+                          Đăng xuất
+                        </button>
                       </>
                     ) : (
                       <Button
                         className="w-full bg-primary hover:bg-primary/90"
                         onClick={() => {
                           setIsMobileMenuOpen(false);
-                          setIsAuthModalOpen(true);
+                          router.push("/login");
                         }}
                       >
                         <User className="w-4 h-4 mr-2" />
-                        Login / Register
+                        Đăng nhập / Đăng ký
                       </Button>
                     )}
                   </div>
                   
-                  {/* Mobile Contact Info */}
-                  <div className="pt-4 border-t border-border space-y-2 text-sm text-muted-foreground">
-                    <p className="flex items-center gap-2">📍 Denpasar, Bali</p>
-                    <p className="flex items-center gap-2">✉️ pandoora@domain.com</p>
-                    <p className="flex items-center gap-2">📞 +62-311-89-90-19</p>
-                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
@@ -157,37 +165,62 @@ const Navbar = () => {
               )}
             </Button>
             {isAuthenticated ? (
-              <Link href="/profile">
-                <Button variant="ghost" size="icon" title={user?.username}>
-                  <User className="w-5 h-5" />
-                </Button>
-              </Link>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="flex items-center gap-2 px-2 sm:px-3" title={user?.username}>
+                    <User className="w-5 h-5" />
+                    <span className="text-xs sm:text-sm hidden md:inline max-w-[120px] truncate">
+                      {user?.username}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 backdrop-blur-md bg-background/70 border border-border/50 shadow-xl">
+                  <DropdownMenuLabel className="text-xs text-muted-foreground font-normal truncate">
+                    {user?.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile" className="flex items-center gap-2 cursor-pointer">
+                      <LayoutDashboard className="w-4 h-4" />
+                      Hồ sơ của tôi
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile?tab=history" className="flex items-center gap-2 cursor-pointer">
+                      <Clock className="w-4 h-4" />
+                      Đơn hàng
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={logout}
+                    className="flex items-center gap-2 text-destructive focus:text-destructive cursor-pointer"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Đăng xuất
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             ) : (
-              <Button 
-                variant="ghost" 
+              <Button
+                variant="ghost"
                 size="icon"
-                onClick={() => setIsAuthModalOpen(true)}
+                onClick={() => router.push("/login")}
               >
                 <User className="w-5 h-5" />
               </Button>
             )}
-            {isAuthenticated ? (
-              <span className="text-xs sm:text-sm text-muted-foreground hidden md:inline">Hi, {user?.username}</span>
-            ) : (
+            {!isAuthenticated && (
               <Button 
                 className="bg-primary hover:bg-primary/90 text-primary-foreground btn-glow text-xs sm:text-sm px-3 sm:px-4"
-                onClick={() => setIsAuthModalOpen(true)}
+                onClick={() => router.push("/login")}
               >
-                Login
+                Đăng nhập
               </Button>
             )}
           </div>
         </div>
-      </nav>      <LoginModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-      />
-    </>
+      </nav>    </>
   );
 };
 

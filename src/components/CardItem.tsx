@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Waves, Lock } from "lucide-react";
 import Image from "next/image";
+import { formatVND } from "@/lib/utils";
 
 interface CardItemProps {
   card: Card;
@@ -51,7 +52,7 @@ const CardItem = ({ card, onClick, onNFCScan, hasPurchased = false }: CardItemPr
         </h3>
         <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{card.mythology}</p>
         <div className="flex items-center justify-between">
-          <span className="text-xl sm:text-2xl font-bold text-primary">${card.price}</span>
+          <span className="text-xl sm:text-2xl font-bold text-primary">{formatVND(card.price)}</span>
           {card.stock && card.stock < 10 && (
             <span className="text-xs text-destructive">Only {card.stock} left!</span>
           )}

@@ -7,11 +7,17 @@ import { CollectionProvider } from "@/contexts/CollectionContext";
 import { PurchaseHistoryProvider } from "@/contexts/PurchaseHistoryContext";
 import { CommunityProvider } from "@/contexts/CommunityContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
+import { ToastContainer } from "react-toastify";
 import { ReactNode, useState } from "react";
+import type { AuthUser } from "@/lib/auth-utils";
 
-export function Providers({ children }: { children: ReactNode }) {
+type ProvidersProps = {
+  children: ReactNode;
+  /** Server-read session cookie passed from layout.tsx */
+  initialUser: AuthUser | null;
+};
+
+export function Providers({ children, initialUser }: ProvidersProps) {
   const [queryClient] = useState(() => new QueryClient({
     defaultOptions: {
       queries: {
@@ -25,14 +31,22 @@ export function Providers({ children }: { children: ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
+      <AuthProvider initialUser={initialUser}>
         <CartProvider>
           <CollectionProvider>
             <PurchaseHistoryProvider>
               <CommunityProvider>
                 <TooltipProvider>
-                  <Toaster />
-                  <Sonner />
+                  <ToastContainer
+                    position="top-right"
+                    autoClose={4000}
+                    hideProgressBar={false}
+                    newestOnTop
+                    closeOnClick
+                    pauseOnHover
+                    draggable
+                    theme="dark"
+                  />
                   {children}
                 </TooltipProvider>
               </CommunityProvider>

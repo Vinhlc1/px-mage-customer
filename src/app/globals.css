@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "react-toastify/dist/ReactToastify.css";
 
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
@@ -92,10 +93,9 @@ All colors MUST be HSL.
   }
 
   .card-glass {
-    background: rgba(var(--card), 0.8);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
   }
 
   .btn-glow {

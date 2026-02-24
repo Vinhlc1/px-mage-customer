@@ -22,7 +22,7 @@ const CreatePost = () => {
   const { toast } = useToast();
   const { addPost } = useCommunity();
   const { collection } = useCollection();
-  const { isAuthenticated, login, user } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   
   const [newPost, setNewPost] = useState({
     title: "",
@@ -67,17 +67,6 @@ const CreatePost = () => {
                   onClick={() => router.push("/marketplace")}
                 >
                   Browse Cards
-                </Button>
-              </div>
-                {/* Temporary login for testing */}
-              <div className="mt-8 p-4 bg-secondary/10 rounded-lg">
-                <p className="text-sm text-muted-foreground mb-4">Quick login for testing:</p>
-                <Button 
-                  onClick={() => login("test@example.com", "password")}
-                  variant="outline"
-                  size="sm"
-                >
-                  Quick Login
                 </Button>
               </div>
             </div>

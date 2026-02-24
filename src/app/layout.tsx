@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Cinzel } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
+import { getServerAuth } from "@/lib/auth";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 
@@ -67,18 +68,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const { user } = await getServerAuth();
+
   return (
-    <html lang="en">
+    <html lang="vi">
       <body
         className={`${inter.variable} ${cinzel.variable} antialiased`}
       >
         <div className="starfield" />
-        <Providers>{children}</Providers>
+        <Providers initialUser={user}>{children}</Providers>
         <Analytics />
         <SpeedInsights />
       </body>

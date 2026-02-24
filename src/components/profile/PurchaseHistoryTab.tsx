@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Package } from "lucide-react";
 import { PurchaseOrder } from "@/contexts/PurchaseHistoryContext";
+import { formatVND } from "@/lib/utils";
 
 interface PurchaseHistoryTabProps {
   orders: PurchaseOrder[];
@@ -68,7 +69,7 @@ export default function PurchaseHistoryTab({ orders }: PurchaseHistoryTabProps) 
                       </div>
                       <div className="text-right">
                         <p className="text-sm">× {item.quantity}</p>
-                        <p className="font-medium">${item.price.toFixed(2)}</p>
+                        <p className="font-medium">{formatVND(item.price)}</p>
                       </div>
                     </div>
                   ))}
@@ -78,19 +79,19 @@ export default function PurchaseHistoryTab({ orders }: PurchaseHistoryTabProps) 
               <div className="border-t pt-4">
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Subtotal:</span>
-                  <span>${order.subtotal.toFixed(2)}</span>
+                  <span>{formatVND(order.subtotal)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Shipping:</span>
-                  <span>${order.shipping.toFixed(2)}</span>
+                  <span>{formatVND(order.shipping)}</span>
                 </div>
                 <div className="flex justify-between text-sm text-muted-foreground">
                   <span>Tax:</span>
-                  <span>${order.tax.toFixed(2)}</span>
+                  <span>{formatVND(order.tax)}</span>
                 </div>
                 <div className="flex justify-between font-semibold text-lg border-t pt-2 mt-2">
                   <span>Total:</span>
-                  <span className="text-primary">${order.total.toFixed(2)}</span>
+                  <span className="text-primary">{formatVND(order.total)}</span>
                 </div>
               </div>
 

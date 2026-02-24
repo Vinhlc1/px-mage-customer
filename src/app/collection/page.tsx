@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import DevNotice from "@/components/DevNotice";
 import Image from "next/image";
 import { storySeries, getSeriesProgress } from "@/data/storySeries";
 import { cards } from "@/data/cards";
@@ -122,6 +123,7 @@ const Collection = () => {
     <div className="min-h-screen bg-background">
       <div className="starfield" />
       <Navbar />
+      <DevNotice feature="Collection" description="chưa có API — đang dùng dữ liệu mẫu từ /data/." />
 
       <section className="container mx-auto px-4 py-8 sm:py-12 md:py-16">
         <div className="text-center mb-8 sm:mb-10 md:mb-12">
