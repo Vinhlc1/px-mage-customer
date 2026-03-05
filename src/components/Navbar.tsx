@@ -98,7 +98,7 @@ const Navbar = () => {
                           Hồ sơ của tôi
                         </Link>
                         <Link
-                          href="/profile?tab=history"
+                          href="/orders"
                           onClick={handleNavClick}
                           className="block text-lg font-medium text-foreground hover:text-primary transition-colors py-2 px-3 rounded-lg hover:bg-primary/10"
                         >
@@ -186,7 +186,7 @@ const Navbar = () => {
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/profile?tab=history" className="flex items-center gap-2 cursor-pointer">
+                    <Link href="/orders" className="flex items-center gap-2 cursor-pointer">
                       <Clock className="w-4 h-4" />
                       Đơn hàng
                     </Link>

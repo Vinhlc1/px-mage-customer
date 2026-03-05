@@ -1,13 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PixelMage — Customer Portal
+
+Customer-facing storefront for purchasing and managing Magic: The Gathering card templates and physical cards.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router) + React 19 + TypeScript 5
+- **Styling**: Tailwind CSS v4 + shadcn/ui
+- **State**: React Context (Auth, Cart, Collection, PurchaseHistory, Community)
+- **API**: Direct calls to BE at `http://localhost:8386` via Bearer token (non-httpOnly cookie)
+
+## Features
+
+| Feature | Status | Notes |
+|---|---|---|
+| Home / Card Catalog | ✅ Live | Real card templates from BE |
+| Marketplace | ✅ Live | Real card templates from BE |
+| Authentication | ✅ Live | Login / Register via Next.js proxy |
+| My Cards | ✅ Live | Real owned physical cards from BE |
+| Collection | ✅ Live | Real owned card templates from BE |
+| Purchase (Card Tiers) | ✅ Live | Real price tiers → creates BE order |
+| Checkout | ✅ Live | Creates real BE order (payment UI is placeholder) |
+| Orders List (`/orders`) | ✅ Live | Lists all customer orders from BE |
+| Order Detail (`/orders/[id]`) | ✅ Live | Full order detail with items from BE |
+| Profile | ✅ Live | Account info and tabs |
+| Auctions | 🚧 Dev | Mock data — DevNotice displayed |
+| Community | 🚧 Dev | Mock data — DevNotice displayed |
+| About / Contact | ✅ Static | Static content pages |
+
+## API Pattern
+
+The customer portal calls the backend **directly** from the browser:
+
+```
+Browser → http://localhost:8386/api/...
+           (Bearer token from ACCESS_TOKEN_COOKIE)
+```
+
+Auth routes use a Next.js proxy at `/api/auth/*` to set httpOnly session cookies.
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+## Environment Variables
+
+```env
+NEXT_PUBLIC_API_URL=http://localhost:8386
+```
+
+## Project Structure
+
+```
+src/
+  app/           # Next.js App Router pages
+  components/    # Shared UI components
+  contexts/      # React contexts (Auth, Cart, Collection, etc.)
+  lib/api/       # BE API functions (direct fetch)
+  types/         # TypeScript interfaces
+  hooks/         # Custom React hooks
+```
+
 # or
 pnpm dev
 # or
