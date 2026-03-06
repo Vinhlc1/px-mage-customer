@@ -5,14 +5,14 @@
  * response utilities. Every API route imports from here instead of duplicating boilerplate.
  */
 
+import { TOKEN_COOKIE } from "@/lib/auth-utils";
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
-import { TOKEN_COOKIE } from "@/lib/auth-utils";
 
 // ── Config ────────────────────────────────────────────────────────────────────
 
 export const API_BASE_URL =
-  process.env.API_BASE_URL ?? "http://localhost:8386/api";
+  process.env.API_BASE_URL ?? "http://localhost:8080/api";
 
 /** Base cookie attributes for every auth cookie. */
 const COOKIE_BASE = {

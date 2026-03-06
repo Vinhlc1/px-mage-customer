@@ -1,7 +1,7 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect, useCallback } from "react";
-import { getOrdersByCustomer, BeOrder } from "@/lib/api/orders";
+import { BeOrder, getMyOrders } from "@/lib/api/orders";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
 
 export interface PurchaseOrder {
@@ -26,23 +26,23 @@ export interface PurchaseOrder {
 function mapBeOrder(order: BeOrder): PurchaseOrder {
   return {
     id: String(order.orderId),
-    date: order.orderDate,
+    date: order.createdAt || new Date().toISOString(),
     items: (order.orderItems ?? []).map(item => ({
       cardId: String(item.orderItemId),
-      cardName: `Card #${item.orderItemId}`,
+      cardName: item.productName || `Card #${item.orderItemId}`,
       cardImage: "",
-      quantity: item.quantity,
-      price: Number(item.unitPrice),
+      quantity: item.quantity || 1,
+      price: Number(item.unitPrice || 0),
       rarity: "Common",
     })),
     subtotal: Number(order.totalAmount),
     shipping: 0,
     tax: 0,
     total: Number(order.totalAmount),
-    status: order.status === "COMPLETED" ? "completed"
+    status: order.status === "DELIVERED" ? "completed"
       : order.status === "CANCELLED" ? "cancelled"
       : "pending",
-    paymentMethod: order.paymentMethod ?? "Card",
+    paymentMethod: order.paymentGateway ?? "COD",
   };
 }
 
@@ -58,32 +58,32 @@ interface PurchaseHistoryContextType {
 const PurchaseHistoryContext = createContext<PurchaseHistoryContextType | undefined>(undefined);
 
 export const PurchaseHistoryProvider = ({ children }: { children: ReactNode }) => {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [beOrders, setBeOrders] = useState<BeOrder[]>([]);
   const [localOrders, setLocalOrders] = useState<PurchaseOrder[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const refreshOrders = useCallback(async () => {
-    if (!user?.customerId) return;
+    if (!isAuthenticated) return;
     setIsLoading(true);
     try {
-      const data = await getOrdersByCustomer(user.customerId);
+      const data = await getMyOrders();
       setBeOrders(data);
     } catch (err) {
       console.error("Failed to load orders", err);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.customerId]);
+  }, [isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && user?.customerId) {
+    if (isAuthenticated) {
       refreshOrders();
     } else {
       setBeOrders([]);
       setLocalOrders([]);
     }
-  }, [isAuthenticated, user?.customerId, refreshOrders]);
+  }, [isAuthenticated, refreshOrders]);
 
   const orders: PurchaseOrder[] = [
     ...beOrders.map(mapBeOrder),

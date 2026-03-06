@@ -1,13 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode, useEffect, useMemo, useCallback } from "react";
+import { BeInventoryItem, getMyInventory } from "@/lib/api/collections";
 import { UserCollection } from "@/types/card";
-import { getOwnedCards, BePhysicalCard } from "@/lib/api/collections";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { useAuth } from "./AuthContext";
 
 interface CollectionContextType {
   collection: UserCollection;
-  ownedCards: BePhysicalCard[];
+  ownedCards: BeInventoryItem[];
   isLoading: boolean;
   addCardToCollection: (cardId: string) => void;
   removeCardFromCollection: (cardId: string) => void;
@@ -28,36 +28,37 @@ export const CollectionProvider = ({ children }: { children: ReactNode }) => {
     completedSeries: [],
     purchasedCards: []
   });
-  const [ownedCards, setOwnedCards] = useState<BePhysicalCard[]>([]);
+  const [ownedCards, setOwnedCards] = useState<BeInventoryItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   const refreshOwnedCards = useCallback(async () => {
-    if (!user?.customerId) return;
+    // getMyInventory doesn't need an ID in the URL, it reads the User header
+    if (!isAuthenticated) return;
     setIsLoading(true);
     try {
-      const cards = await getOwnedCards(user.customerId);
+      const cards = await getMyInventory();
       setOwnedCards(cards);
-      // Update purchasedCards set from real BE data
+      // Update purchasedCards set from real BE data based on template ID
       setCollection(prev => ({
         ...prev,
-        purchasedCards: cards.map(c => String(c.cardId))
+        purchasedCards: cards.map(c => String(c.cardTemplateId))
       }));
     } catch (err) {
       console.error("Failed to load owned cards", err);
     } finally {
       setIsLoading(false);
     }
-  }, [user?.customerId]);
+  }, [isAuthenticated]);
 
   // Load owned cards whenever auth changes
   useEffect(() => {
-    if (isAuthenticated && user?.customerId) {
+    if (isAuthenticated) {
       refreshOwnedCards();
     } else {
       setOwnedCards([]);
       setCollection({ collectedCards: [], completedSeries: [], purchasedCards: [] });
     }
-  }, [isAuthenticated, user?.customerId, refreshOwnedCards]);
+  }, [isAuthenticated, refreshOwnedCards]);
 
   const addCardToCollection = useCallback((cardId: string) => {
     setCollection(prev => ({

@@ -1,9 +1,9 @@
-import { Card } from "@/types/card";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
-import { Smartphone, Waves, CheckCircle2, Sparkles } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Card } from "@/types/card";
+import { CheckCircle2, Smartphone, Sparkles, Waves } from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface NFCScanModalProps {
   card: Card | null;
@@ -25,7 +25,7 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
 
   const handleStartScan = () => {
     setScanStatus("scanning");
-    
+
     // Giả lập quá trình quét 2.5 giây
     setTimeout(() => {
       setScanStatus("success");
@@ -49,7 +49,7 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
                   <Smartphone className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 text-primary animate-pulse" />
                 </div>
               )}
-              
+
               {scanStatus === "scanning" && (
                 <>
                   <div className="absolute inset-0 flex items-center justify-center">
@@ -64,7 +64,7 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
                   <Waves className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 text-primary animate-bounce" />
                 </>
               )}
-              
+
               {scanStatus === "success" && (
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="relative">
@@ -83,8 +83,8 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
                   <p className="text-sm sm:text-base text-muted-foreground mb-3 sm:mb-4">{card.mythology}</p>
                   <Badge className="bg-primary text-xs sm:text-sm">{card.rarity}</Badge>
                 </div>
-                <img 
-                  src={card.image} 
+                <img
+                  src={card.image as string}
                   alt={card.name}
                   className="w-40 h-60 sm:w-48 sm:h-72 object-cover rounded-xl mx-auto shadow-2xl animate-float"
                 />
@@ -136,7 +136,7 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
             {/* Story Content */}
             <div className="relative">
               <img
-                src={card.image}
+                src={card.image as string}
                 alt={card.name}
                 className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-lg mb-3 sm:mb-4 blur-sm opacity-30"
               />
@@ -166,7 +166,7 @@ const NFCScanModal = ({ card, isOpen, onClose, onScanComplete }: NFCScanModalPro
             {/* Full Story */}
             <div className="prose prose-invert max-w-none">
               <div className="space-y-4">
-                {card.story.full.split('\n\n').map((paragraph, idx) => (
+                {card.story?.full?.split('\n\n').map((paragraph: string, idx: number) => (
                   <p key={idx} className="text-foreground leading-relaxed">
                     {paragraph}
                   </p>

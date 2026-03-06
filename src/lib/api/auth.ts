@@ -1,7 +1,7 @@
 import { apiFetch, apiPost, setStoredToken } from "../api-client";
 
 export interface BeAccount {
-  customerId: number;
+  accountId: number;
   email: string;
   name: string;
   phoneNumber: string | null;
@@ -19,7 +19,7 @@ export async function loginApi(
   email: string,
   password: string
 ): Promise<LoginResponse> {
-  const res = await apiPost<LoginResponse>("/api/accounts/login", {
+  const res = await apiPost<LoginResponse>("/auth/login", {
     email,
     password,
   });
@@ -38,7 +38,7 @@ export async function registerApi(
   name: string,
   phoneNumber?: string
 ): Promise<BeAccount> {
-  return apiPost<BeAccount>("/api/accounts/registration", {
+  return apiPost<BeAccount>("/auth/register", {
     email,
     password,
     name,
@@ -49,7 +49,7 @@ export async function registerApi(
 
 export async function logoutApi(): Promise<void> {
   try {
-    await apiFetch("/api/accounts/auth/logout", { method: "POST" });
+    await apiFetch("/auth/logout", { method: "POST" });
   } catch {
     // Best-effort logout; clear local state regardless
   }

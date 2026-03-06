@@ -1,11 +1,11 @@
-import { Card } from "@/types/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Lock, Sparkles, ShoppingCart } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { formatVND } from "@/lib/utils";
+import { Card } from "@/types/card";
+import { Lock, ShoppingCart, Sparkles } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface StoryModalProps {
   card: Card | null;
@@ -28,7 +28,7 @@ const StoryModal = ({ card, isOpen, onClose, onLoginRequired, isAuthenticated }:
     }, 1500);
   };
 
-  const storyContent = isAuthenticated ? card.story.full : card.story.preview;
+  const storyContent = isAuthenticated ? (card.story?.full || "") : (card.story?.preview || "");
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -36,7 +36,7 @@ const StoryModal = ({ card, isOpen, onClose, onLoginRequired, isAuthenticated }:
         <DialogHeader>
           <div className="relative">
             <img
-              src={card.image}
+              src={card.image as string}
               alt={card.name}
               className="w-full h-48 sm:h-56 md:h-64 object-cover rounded-lg mb-3 sm:mb-4 blur-sm opacity-40"
             />
@@ -64,13 +64,13 @@ const StoryModal = ({ card, isOpen, onClose, onLoginRequired, isAuthenticated }:
           {!isAuthenticated && (
             <div className="relative mt-8">
               <div className="absolute inset-x-0 top-0 h-32 bg-linear-to-b from-transparent to-background" />
-              
+
               <div className="mt-16 text-center space-y-4 py-8 border-t border-border">
                 <div className="inline-flex items-center gap-2 text-primary animate-pulse-glow">
                   <Lock className="w-8 h-8" />
                   <span className="text-xl font-semibold">Continue this epic tale?</span>
                 </div>
-                
+
                 <p className="text-muted-foreground">
                   Login required to unlock the full story
                 </p>
@@ -101,7 +101,7 @@ const StoryModal = ({ card, isOpen, onClose, onLoginRequired, isAuthenticated }:
             <div className="mt-12 p-8 rounded-xl bg-linear-to-r from-secondary/20 to-primary/20 border border-primary/30">
               <div className="flex items-center gap-6">
                 <img
-                  src={card.image}
+                  src={card.image as string}
                   alt={card.name}
                   className="w-32 h-48 object-cover rounded-lg shadow-xl animate-float"
                 />

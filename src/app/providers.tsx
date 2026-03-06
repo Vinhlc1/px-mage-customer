@@ -1,15 +1,14 @@
 'use client';
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { CartProvider } from "@/contexts/CartContext";
-import { CollectionProvider } from "@/contexts/CollectionContext";
-import { PurchaseHistoryProvider } from "@/contexts/PurchaseHistoryContext";
-import { CommunityProvider } from "@/contexts/CommunityContext";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { ToastContainer } from "react-toastify";
-import { ReactNode, useState } from "react";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { CollectionProvider } from "@/contexts/CollectionContext";
+import { CommunityProvider } from "@/contexts/CommunityContext";
+import { PurchaseHistoryProvider } from "@/contexts/PurchaseHistoryContext";
 import type { AuthUser } from "@/lib/auth-utils";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactNode, useState } from "react";
+import { ToastContainer } from "react-toastify";
 
 type ProvidersProps = {
   children: ReactNode;
@@ -32,27 +31,25 @@ export function Providers({ children, initialUser }: ProvidersProps) {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider initialUser={initialUser}>
-        <CartProvider>
-          <CollectionProvider>
-            <PurchaseHistoryProvider>
-              <CommunityProvider>
-                <TooltipProvider>
-                  <ToastContainer
-                    position="top-right"
-                    autoClose={4000}
-                    hideProgressBar={false}
-                    newestOnTop
-                    closeOnClick
-                    pauseOnHover
-                    draggable
-                    theme="dark"
-                  />
-                  {children}
-                </TooltipProvider>
-              </CommunityProvider>
-            </PurchaseHistoryProvider>
-          </CollectionProvider>
-        </CartProvider>
+        <CollectionProvider>
+          <PurchaseHistoryProvider>
+            <CommunityProvider>
+              <TooltipProvider>
+                <ToastContainer
+                  position="top-right"
+                  autoClose={4000}
+                  hideProgressBar={false}
+                  newestOnTop
+                  closeOnClick
+                  pauseOnHover
+                  draggable
+                  theme="dark"
+                />
+                {children}
+              </TooltipProvider>
+            </CommunityProvider>
+          </PurchaseHistoryProvider>
+        </CollectionProvider>
       </AuthProvider>
     </QueryClientProvider>
   );

@@ -1,27 +1,24 @@
-import { Moon, ShoppingCart, User, Menu, LogOut, LayoutDashboard, Clock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { useAuth } from "@/contexts/AuthContext";
+import { Clock, LayoutDashboard, LogOut, Menu, Moon, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { useCart } from "@/contexts/CartContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useState, useEffect } from "react";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { useEffect, useState } from "react";
 
 const Navbar = () => {
   const router = useRouter();
-  const { getCartCount } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const cartCount = getCartCount();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 10);
@@ -68,7 +65,7 @@ const Navbar = () => {
                     PixelMage
                   </SheetTitle>
                 </SheetHeader>
-                
+
                 {/* Mobile Navigation */}
                 <nav className="flex flex-col space-y-4">
                   {navLinks.map((link) => (
@@ -81,7 +78,7 @@ const Navbar = () => {
                       {link.label}
                     </Link>
                   ))}
-                  
+
                   {/* Mobile User Section */}
                   <div className="pt-6 border-t border-border space-y-3">
                     {isAuthenticated ? (
@@ -125,7 +122,7 @@ const Navbar = () => {
                       </Button>
                     )}
                   </div>
-                  
+
                 </nav>
               </SheetContent>
             </Sheet>
@@ -151,19 +148,6 @@ const Navbar = () => {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 md:gap-4">
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="relative"
-              onClick={() => router.push("/checkout")}
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {cartCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                  {cartCount}
-                </span>
-              )}
-            </Button>
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -211,7 +195,7 @@ const Navbar = () => {
               </Button>
             )}
             {!isAuthenticated && (
-              <Button 
+              <Button
                 className="bg-primary hover:bg-primary/90 text-primary-foreground btn-glow text-xs sm:text-sm px-3 sm:px-4"
                 onClick={() => router.push("/login")}
               >

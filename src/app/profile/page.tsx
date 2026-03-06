@@ -1,35 +1,34 @@
 "use client";
 
-import { useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { User, Package, History, Settings, MessageCircle } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useCollection } from "@/contexts/CollectionContext";
-import { usePurchaseHistory } from "@/contexts/PurchaseHistoryContext";
-import { useCommunity } from "@/contexts/CommunityContext";
 import PageLayout from "@/components/layout/PageLayout";
-import ProfileHeader from "@/components/profile/ProfileHeader";
 import InventoryTab from "@/components/profile/InventoryTab";
 import PostsTab from "@/components/profile/PostsTab";
+import ProfileHeader from "@/components/profile/ProfileHeader";
 import PurchaseHistoryTab from "@/components/profile/PurchaseHistoryTab";
 import SettingsTab from "@/components/profile/SettingsTab";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/contexts/CollectionContext";
+import { useCommunity } from "@/contexts/CommunityContext";
+import { usePurchaseHistory } from "@/contexts/PurchaseHistoryContext";
 import { updateAccount } from "@/lib/api/accounts";
+import { BeInventoryItem } from "@/lib/api/collections";
 import { Card } from "@/types/card";
-import { BePhysicalCard } from "@/lib/api/collections";
+import { History, MessageCircle, Package, Settings, User } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
-function mapPhysicalCard(c: BePhysicalCard): Card {
+function mapPhysicalCard(c: BeInventoryItem): Card {
   return {
-    id: String(c.cardId),
-    cardId: c.cardId,
-    nfcUuid: c.nfcUuid,
-    name: `Card #${c.cardId}`,
+    id: String(c.inventoryItemId),
+    cardId: c.cardTemplateId,
+    nfcUuid: `nfc-v-${c.inventoryItemId}`, // Mock for UI since source might be ORDER_PAID
+    name: c.productName,
     mythology: "PixelMage",
-    image: "/placeholder-card.png",
+    image: "/placeholder-card.png", // Next iteration we can fetch images via templates
     rarity: "Common",
     price: 0,
-    nfcEnabled: true,
+    nfcEnabled: c.source === "NFC_SCAN",
   };
 }
 
@@ -37,18 +36,18 @@ const Profile = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const defaultTab = searchParams?.get("tab") || "profile";
-  
+
   const { user, logout } = useAuth();
   const { collection, ownedCards } = useCollection();
   const { orders } = usePurchaseHistory();
   const { getUserPosts } = useCommunity();
-  
+
   const [username, setUsername] = useState(user?.username || "MysticSeeker");
   const [email, setEmail] = useState(user?.email || "user@example.com");
-  
+
   // Build FE card array from real owned cards
   const userCards: Card[] = ownedCards.map(mapPhysicalCard);
-  
+
   // Get user's posts
   const userPosts = getUserPosts(user?.username || "MysticSeeker");
 
@@ -58,9 +57,9 @@ const Profile = () => {
   };
 
   const handleSaveProfile = async () => {
-    if (!user?.customerId) return;
+    if (!user?.accountId) return;
     try {
-      await updateAccount(user.customerId, { name: username, email });
+      await updateAccount({ name: username, email });
       // Optionally show toast
     } catch (err) {
       console.error("Failed to save profile", err);
@@ -114,8 +113,8 @@ const Profile = () => {
             </TabsContent>
 
             <TabsContent value="posts" className="space-y-8">
-              <PostsTab 
-                userPosts={userPosts} 
+              <PostsTab
+                userPosts={userPosts}
                 onViewPost={() => router.push("/community")}
               />
             </TabsContent>

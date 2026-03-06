@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { BeOrder, getMyOrders } from "@/lib/api/orders";
+import { formatVND } from "@/lib/utils";
+import { ChevronRight, Lock, Package } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Lock, Package, ChevronRight } from "lucide-react";
-import { useAuth } from "@/contexts/AuthContext";
-import { getOrdersByCustomer, BeOrder } from "@/lib/api/orders";
-import { formatVND } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 function orderStatusVariant(
   status: string
@@ -49,17 +49,17 @@ function OrderSkeleton() {
 
 export default function OrdersPage() {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [orders, setOrders] = useState<BeOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (!isAuthenticated || !user?.customerId) return;
-    getOrdersByCustomer(user.customerId)
+    if (!isAuthenticated) return;
+    getMyOrders()
       .then(setOrders)
       .catch(() => {})
       .finally(() => setIsLoading(false));
-  }, [isAuthenticated, user?.customerId]);
+  }, [isAuthenticated]);
 
   if (!isAuthenticated) {
     return (

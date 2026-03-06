@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from "react";
-import { CommunityPost, CreatePostData, Comment } from "@/types/community";
 import { cards } from "@/data/cards";
+import { Comment, CommunityPost, CreatePostData } from "@/types/community";
+import { createContext, ReactNode, useContext, useState } from "react";
 
 interface CommunityContextType {
   posts: CommunityPost[];
@@ -18,7 +18,7 @@ const CommunityContext = createContext<CommunityContextType | undefined>(undefin
 
 export const CommunityProvider = ({ children }: { children: ReactNode }) => {
   const [likedPosts, setLikedPosts] = useState<string[]>([]);
-  
+
   // Mock initial posts
   const [posts, setPosts] = useState<CommunityPost[]>([
     {
@@ -48,7 +48,7 @@ export const CommunityProvider = ({ children }: { children: ReactNode }) => {
       images: ["/placeholder.svg"]
     },
     {
-      id: "post_2", 
+      id: "post_2",
       title: "Odin's Wisdom - The Crown Jewel of My Collection",
       content: "After months of searching, I finally got Odin's Wisdom! The detail on this card is absolutely stunning. The way it captures the All-Father's majesty is breathtaking.",
       cardId: "odin-wisdom",
@@ -73,7 +73,7 @@ export const CommunityProvider = ({ children }: { children: ReactNode }) => {
       content: postData.content,
       cardId: postData.cardId,
       cardName: card.name,
-      cardImage: card.image,
+      cardImage: card.image as string,
       authorId: userInfo?.id || "current_user",
       authorName: userInfo?.username || "MysticSeeker",
       authorAvatar: "",
@@ -88,20 +88,20 @@ export const CommunityProvider = ({ children }: { children: ReactNode }) => {
   };
   const likePost = (postId: string) => {
     const isLiked = likedPosts.includes(postId);
-    
+
     if (isLiked) {
       // Unlike the post
       setLikedPosts(prev => prev.filter(id => id !== postId));
-      setPosts(prev => prev.map(post => 
-        post.id === postId 
+      setPosts(prev => prev.map(post =>
+        post.id === postId
           ? { ...post, likes: Math.max(0, post.likes - 1) }
           : post
       ));
     } else {
       // Like the post
       setLikedPosts(prev => [...prev, postId]);
-      setPosts(prev => prev.map(post => 
-        post.id === postId 
+      setPosts(prev => prev.map(post =>
+        post.id === postId
           ? { ...post, likes: post.likes + 1 }
           : post
       ));

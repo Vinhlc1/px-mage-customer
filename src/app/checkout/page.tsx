@@ -1,45 +1,38 @@
 "use client";
 
-import { useState } from "react";
 import Navbar from "@/components/Navbar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import {
-  CreditCard,
-  Package,
-  Trash2,
-  MapPin,
-  ChevronRight,
-  ChevronLeft,
-  CheckCircle2,
-  ShoppingBag,
-  Lock,
-  Minus,
-} from "lucide-react";
-import { useRouter } from "next/navigation";
-import Image from "next/image";
-import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
 import { usePurchaseHistory } from "@/contexts/PurchaseHistoryContext";
-import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { getCardTemplate, mapCardTemplate } from "@/lib/api/cards";
 import { createOrder } from "@/lib/api/orders";
-import { getCardTemplate } from "@/lib/api/cards";
 import { formatVND } from "@/lib/utils";
+import { Card } from "@/types/card";
+import {
+    CheckCircle2,
+    ChevronLeft,
+    ChevronRight,
+    CreditCard,
+    Lock,
+    MapPin,
+    Package,
+} from "lucide-react";
+import Image from "next/image";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useState } from "react";
 
-// â”€â”€ Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-type Step = "cart" | "shipping" | "payment";
+type Step = "shipping" | "payment";
 
 const STEPS: { key: Step; label: string; icon: React.ReactNode }[] = [
-  { key: "cart", label: "Cart", icon: <ShoppingBag className="w-4 h-4" /> },
   { key: "shipping", label: "Shipping", icon: <MapPin className="w-4 h-4" /> },
   { key: "payment", label: "Payment", icon: <CreditCard className="w-4 h-4" /> },
 ];
 
-// â”€â”€ Step indicator â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 function StepIndicator({ current }: { current: Step }) {
   const idx = STEPS.findIndex((s) => s.key === current);
   return (
@@ -75,49 +68,23 @@ function StepIndicator({ current }: { current: Step }) {
   );
 }
 
-// â”€â”€ Order summary sidebar â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-function OrderSummary({
-  subtotal,
-  total,
-  itemCount,
-}: {
-  subtotal: number;
-  total: number;
-  itemCount: number;
-}) {
-  return (
-    <div className="card-glass p-4 sm:p-6 space-y-4 text-sm">
-      <h3 className="font-serif font-bold text-base">Order Summary</h3>
-      <div className="space-y-2 text-muted-foreground">
-        <div className="flex justify-between">
-          <span>Items ({itemCount})</span>
-          <span className="text-foreground">{formatVND(subtotal)}</span>
-        </div>
-      </div>
-      <Separator />
-      <div className="flex justify-between font-bold text-base">
-        <span>Total</span>
-        <span className="text-primary">{formatVND(total)}</span>
-      </div>
-      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-        <Lock className="w-3 h-3" />
-        Secure & encrypted checkout
-      </div>
-    </div>
-  );
-}
-
-// â”€â”€ Main component â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-const Checkout = () => {
+function CheckoutContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const templateIdParam = searchParams.get("templateId");
+  const quantityParam = searchParams.get("quantity");
+
   const { toast } = useToast();
-  const { cart, clearCart, getCartTotal, removeFromCart, updateQuantity } = useCart();
   const { refreshOwnedCards } = useCollection();
   const { addOrder, refreshOrders } = usePurchaseHistory();
-  const { user } = useAuth();
+  const { user, isAuthenticated } = useAuth();
 
-  const [step, setStep] = useState<Step>("cart");
+  const [step, setStep] = useState<Step>("shipping");
   const [isProcessing, setIsProcessing] = useState(false);
+
+  const [card, setCard] = useState<Card | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
 
   const [shipping, setShipping] = useState({
     name: user?.username ?? "",
@@ -136,136 +103,107 @@ const Checkout = () => {
     cvv: "",
   });
 
-  const subtotal = getCartTotal();
-  const total = subtotal;
-  const itemCount = cart.reduce((n, i) => n + i.quantity, 0);
+  useEffect(() => {
+    if (!isAuthenticated) {
+        router.push("/login?redirect=/checkout");
+        return;
+    }
+    if (!templateIdParam) {
+      setIsLoading(false);
+      return;
+    }
 
-  // â”€â”€ Empty cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  if (cart.length === 0 && step !== "payment") {
+    const tid = Number(templateIdParam);
+    const qty = Number(quantityParam) || 1;
+    setQuantity(qty);
+
+    getCardTemplate(tid)
+      .then((tpl) => setCard(mapCardTemplate(tpl)))
+      .catch(() => setCard(null))
+      .finally(() => setIsLoading(false));
+  }, [templateIdParam, quantityParam, isAuthenticated, router]);
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
-        <div className="starfield" />
-        <Navbar />
-        <div className="container mx-auto px-4 py-24 text-center space-y-4">
-          <ShoppingBag className="w-16 h-16 mx-auto text-muted-foreground" />
-          <h1 className="text-3xl font-serif font-bold">Your Cart is Empty</h1>
-          <p className="text-muted-foreground">Add some cards before checking out.</p>
-          <Button className="bg-primary hover:bg-primary/90 mt-4" onClick={() => router.push("/marketplace")}>
-            Browse Marketplace
-          </Button>
-        </div>
+      <div className="container mx-auto px-4 py-24 flex flex-col items-center gap-4 text-muted-foreground">
+        <div className="w-10 h-10 border-2 border-primary/40 border-t-primary rounded-full animate-spin" />
+        <p>Loading checkout...</p>
       </div>
     );
   }
 
-  // â”€â”€ Handlers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const formatCardNumber = (val: string) =>
-    val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+  if (!card) {
+    return (
+      <div className="container mx-auto px-4 py-24 text-center space-y-4">
+        <Package className="w-16 h-16 mx-auto text-muted-foreground" />
+        <h1 className="text-3xl font-serif font-bold">No Item Selected</h1>
+        <p className="text-muted-foreground">Please select a card from the marketplace to purchase.</p>
+        <Button className="bg-primary hover:bg-primary/90 mt-4" onClick={() => router.push("/marketplace")}>
+          Browse Marketplace
+        </Button>
+      </div>
+    );
+  }
 
-  const formatExpiry = (val: string) => {
-    const digits = val.replace(/\D/g, "").slice(0, 4);
-    return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
-  };
+  const subtotal = card.price * quantity;
+  const total = subtotal;
 
   const handlePlaceOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsProcessing(true);
 
     try {
-      if (!user?.customerId) {
+      if (!user?.accountId) {
         router.push("/login?redirect=/checkout");
         return;
       }
 
-      // ── Stock pre-check (race-condition guard) ───────────────────────────
-      const stockIssues: string[] = [];
-      await Promise.all(
-        cart.map(async (item) => {
-          try {
-            const templateId = item.card.templateId ?? Number(item.card.id);
-            const tpl = await getCardTemplate(templateId);
-            const available = tpl.cards?.length ?? 0;
-            if (available < item.quantity) {
-              stockIssues.push(
-                `${item.card.name}: cần ${item.quantity}, còn lại ${available}`
-              );
-            }
-          } catch {
-            // Cannot check → let BE decide
-          }
-        })
-      );
-
-      if (stockIssues.length > 0) {
-        toast({
-          title: "Một số thẻ đã hết hàng ⚠️",
-          description: stockIssues.join(" | "),
-          variant: "destructive",
-        });
-        setIsProcessing(false);
-        return;
-      }
-      // ─────────────────────────────────────────────────────────────────────
-
       const shippingAddress = `${shipping.name}, ${shipping.address}, ${shipping.city} ${shipping.postalCode}, Tel: ${shipping.phone}`;
 
       const beOrder = await createOrder({
-        customerId: user.customerId,
-        orderDate: new Date().toISOString(),
-        status: "PENDING",
-        totalAmount: total,
+        paymentGateway: "COD",
         shippingAddress,
-        paymentMethod: "CARD",
-        paymentStatus: "PENDING",
-        notes: `Email: ${shipping.email}${shipping.note ? ` | Note: ${shipping.note}` : ""}`,
-        orderItems: cart.map((item) => ({
-          cardId: item.card.cardId ?? Number(item.card.id),
-          quantity: item.quantity,
-          unitPrice: item.card.price,
-          subtotal: item.card.price * item.quantity,
-        })),
+        shippingPhone: shipping.phone || "",
+        items: [{
+          cardTemplateId: Number(card.id),
+          productType: "SINGLE_CARD",
+          productName: card.name,
+          quantity: quantity,
+          unitPrice: card.price,
+        }],
       });
 
       addOrder({
         id: String(beOrder.orderId),
-        date: beOrder.orderDate,
-        items: cart.map((item) => ({
-          cardId: item.card.id,
-          cardName: item.card.name,
-          cardImage: typeof item.card.image === "string" ? item.card.image : "",
-          quantity: item.quantity,
-          price: item.card.price,
-          rarity: item.card.rarity,
-        })),
+        date: beOrder.createdAt || new Date().toISOString(),
+        items: [{
+          cardId: card.id,
+          cardName: card.name,
+          cardImage: typeof card.image === "string" ? card.image : "",
+          quantity: quantity,
+          price: card.price,
+          rarity: card.rarity,
+        }],
         subtotal,
         shipping: 0,
         tax: 0,
         total,
         status: "pending",
-        paymentMethod: "Card",
+        paymentMethod: "COD",
       });
 
       await Promise.all([refreshOwnedCards().catch(() => {}), refreshOrders().catch(() => {})]);
-      clearCart();
 
       toast({
         title: "Đặt hàng thành công! 🎉",
         description: `Order #${beOrder.orderId} confirmed. We'll process it shortly.`,
       });
-      router.push("/profile?tab=history");
+      router.push("/orders");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Something went wrong";
-      const isConflict =
-        msg.includes("409") ||
-        msg.toLowerCase().includes("conflict") ||
-        msg.toLowerCase().includes("stock") ||
-        msg.toLowerCase().includes("sold out") ||
-        msg.toLowerCase().includes("unavailable");
       toast({
-        title: isConflict ? "Thẻ vừa hết hàng ⚠️" : "Đặt hàng thất bại",
-        description: isConflict
-          ? "Một hoặc nhiều thẻ đã được mua bởi người khác ngay trước. Vui lòng cập nhật giỏ hàng."
-          : msg,
+        title: "Đặt hàng thất bại",
+        description: msg,
         variant: "destructive",
       });
     } finally {
@@ -273,76 +211,6 @@ const Checkout = () => {
     }
   };
 
-  // â”€â”€ Step: Cart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  const renderCartStep = () => (
-    <div className="space-y-4">
-      <div className="space-y-3 max-h-[420px] overflow-y-auto pr-1">
-        {cart.map((item) => (
-          <div key={item.card.id} className="card-glass flex gap-3 p-3 rounded-xl">
-            <div className="relative w-16 h-20 flex-shrink-0 rounded-lg overflow-hidden">
-              <Image
-                src={typeof item.card.image === "string" ? item.card.image : "/placeholder-card.png"}
-                alt={item.card.name}
-                fill
-                className="object-cover"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-sm truncate">{item.card.name}</h3>
-              <Badge variant="secondary" className="text-xs mt-0.5">
-                {item.card.rarity}
-              </Badge>
-              <p className="text-xs text-muted-foreground mt-1">
-                {formatVND(item.card.price)} each
-              </p>
-              <div className="flex items-center gap-2 mt-2">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => updateQuantity(item.card.id, item.quantity - 1)}
-                >
-                  <Minus className="w-3 h-3" />
-                </Button>
-                <span className="text-sm w-4 text-center">{item.quantity}</span>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="h-7 w-7"
-                  onClick={() => updateQuantity(item.card.id, item.quantity + 1)}
-                >
-                  +
-                </Button>
-              </div>
-            </div>
-            <div className="flex flex-col items-end justify-between flex-shrink-0">
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 text-muted-foreground hover:text-destructive"
-                onClick={() => removeFromCart(item.card.id)}
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-              <span className="font-bold text-sm text-primary">
-                {formatVND(item.card.price * item.quantity)}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <Button
-        className="w-full bg-primary hover:bg-primary/90 mt-2"
-        onClick={() => setStep("shipping")}
-      >
-        Continue to Shipping
-        <ChevronRight className="w-4 h-4 ml-1" />
-      </Button>
-    </div>
-  );
-
-  // â”€â”€ Step: Shipping â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const renderShippingStep = () => (
     <form
       onSubmit={(e) => {
@@ -432,10 +300,10 @@ const Checkout = () => {
           type="button"
           variant="outline"
           className="flex-1"
-          onClick={() => setStep("cart")}
+          onClick={() => router.back()}
         >
           <ChevronLeft className="w-4 h-4 mr-1" />
-          Back
+          Cancel
         </Button>
         <Button type="submit" className="flex-1 bg-primary hover:bg-primary/90">
           Continue to Payment
@@ -445,10 +313,16 @@ const Checkout = () => {
     </form>
   );
 
-  // â”€â”€ Step: Payment â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  const formatCardNumber = (val: string) =>
+    val.replace(/\D/g, "").slice(0, 16).replace(/(.{4})/g, "$1 ").trim();
+
+  const formatExpiry = (val: string) => {
+    const digits = val.replace(/\D/g, "").slice(0, 4);
+    return digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits;
+  };
+
   const renderPaymentStep = () => (
     <form onSubmit={handlePlaceOrder} className="space-y-4">
-      {/* Shipping recap */}
       <div className="card-glass p-3 rounded-xl text-sm space-y-1 text-muted-foreground">
         <p className="text-foreground font-medium text-xs uppercase tracking-wide mb-1">
           Delivering to
@@ -461,17 +335,16 @@ const Checkout = () => {
 
       <div className="space-y-1">
         <p className="text-sm font-semibold flex items-center gap-1.5">
-          <CreditCard className="w-4 h-4" /> Card Details
+          <CreditCard className="w-4 h-4" /> Card Details (Optional COD)
         </p>
-        <p className="text-xs text-muted-foreground">Simulated payment &mdash; no real charge</p>
+        <p className="text-xs text-muted-foreground">Simulated payment &mdash; order will use COD.</p>
       </div>
 
       <div className="space-y-1.5">
-        <Label htmlFor="p-number">Card Number *</Label>
+        <Label htmlFor="p-number">Card Number</Label>
         <Input
           id="p-number"
           placeholder="1234 5678 9012 3456"
-          required
           maxLength={19}
           value={payment.cardNumber}
           onChange={(e) =>
@@ -481,11 +354,10 @@ const Checkout = () => {
         />
       </div>
       <div className="space-y-1.5">
-        <Label htmlFor="p-name">Name on Card *</Label>
+        <Label htmlFor="p-name">Name on Card</Label>
         <Input
           id="p-name"
           placeholder="NGUYEN VAN A"
-          required
           value={payment.cardName}
           onChange={(e) =>
             setPayment({ ...payment, cardName: e.target.value.toUpperCase() })
@@ -495,11 +367,10 @@ const Checkout = () => {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="space-y-1.5">
-          <Label htmlFor="p-expiry">Expiry (MM/YY) *</Label>
+          <Label htmlFor="p-expiry">Expiry (MM/YY)</Label>
           <Input
             id="p-expiry"
             placeholder="12/27"
-            required
             maxLength={5}
             value={payment.expiry}
             onChange={(e) =>
@@ -509,11 +380,10 @@ const Checkout = () => {
           />
         </div>
         <div className="space-y-1.5">
-          <Label htmlFor="p-cvv">CVV *</Label>
+          <Label htmlFor="p-cvv">CVV</Label>
           <Input
             id="p-cvv"
             placeholder="123"
-            required
             maxLength={4}
             value={payment.cvv}
             onChange={(e) =>
@@ -556,85 +426,94 @@ const Checkout = () => {
     </form>
   );
 
-  // â”€â”€ Render â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   const stepTitles: Record<Step, string> = {
-    cart: "Your Cart",
     shipping: "Shipping Details",
     payment: "Payment",
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="starfield" />
-      <Navbar />
+    <section className="container mx-auto px-4 py-8 sm:py-12">
+      <div className="max-w-5xl mx-auto">
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2 text-center">
+          Checkout
+        </h1>
+        <p className="text-muted-foreground text-center text-sm mb-8">
+          1 item · {formatVND(total)} total
+        </p>
 
-      <section className="container mx-auto px-4 py-8 sm:py-12">
-        <div className="max-w-5xl mx-auto">
-          <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2 text-center">
-            Checkout
-          </h1>
-          <p className="text-muted-foreground text-center text-sm mb-8">
-            {itemCount} item{itemCount !== 1 ? "s" : ""} · {formatVND(total)} total
-          </p>
+        <StepIndicator current={step} />
 
-          <StepIndicator current={step} />
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+          <div className="lg:col-span-2 card-glass p-5 sm:p-8 rounded-2xl">
+            <div className="flex items-center gap-2 mb-6">
+              {STEPS.find((s) => s.key === step)?.icon}
+              <h2 className="text-xl font-serif font-bold">{stepTitles[step]}</h2>
+            </div>
+            {step === "shipping" && renderShippingStep()}
+            {step === "payment" && renderPaymentStep()}
+          </div>
 
-          <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
-            {/* Main form area â€” takes 2 cols */}
-            <div className="lg:col-span-2 card-glass p-5 sm:p-8 rounded-2xl">
-              <div className="flex items-center gap-2 mb-6">
-                {STEPS.find((s) => s.key === step)?.icon}
-                <h2 className="text-xl font-serif font-bold">{stepTitles[step]}</h2>
+          <div className="space-y-4">
+            <div className="card-glass p-4 sm:p-6 space-y-4 text-sm">
+              <h3 className="font-serif font-bold text-base">Order Summary</h3>
+              <div className="space-y-2 text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Items (1)</span>
+                  <span className="text-foreground">{formatVND(subtotal)}</span>
+                </div>
               </div>
-
-              {step === "cart" && renderCartStep()}
-              {step === "shipping" && renderShippingStep()}
-              {step === "payment" && renderPaymentStep()}
+              <Separator />
+              <div className="flex justify-between font-bold text-base">
+                <span>Total</span>
+                <span className="text-primary">{formatVND(total)}</span>
+              </div>
+              <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <Lock className="w-3 h-3" />
+                Secure & encrypted checkout
+              </div>
             </div>
 
-            {/* Sidebar summary â€” always visible */}
-            <div className="space-y-4">
-              <OrderSummary
-                subtotal={subtotal}
-                total={total}
-                itemCount={itemCount}
-              />
-
-              {/* Items mini list */}
-              <div className="card-glass p-4 rounded-xl space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  {itemCount} item{itemCount !== 1 ? "s" : ""}
-                </p>
-                {cart.map((item) => (
-                  <div key={item.card.id} className="flex items-center gap-2 text-sm">
-                    <div className="relative w-8 h-10 flex-shrink-0 rounded overflow-hidden">
-                      <Image
-                        src={
-                          typeof item.card.image === "string"
-                            ? item.card.image
-                            : "/placeholder-card.png"
-                        }
-                        alt={item.card.name}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                    <span className="flex-1 truncate text-xs">{item.card.name}</span>
-                    <span className="text-xs text-muted-foreground flex-shrink-0">
-                      ×{item.quantity}
-                    </span>
-                    <span className="text-xs font-medium flex-shrink-0">
-                      {formatVND(item.card.price * item.quantity)}
-                    </span>
-                  </div>
-                ))}
+            <div className="card-glass p-4 rounded-xl space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                1 item
+              </p>
+              <div className="flex items-center gap-2 text-sm">
+                <div className="relative w-8 h-10 flex-shrink-0 rounded overflow-hidden">
+                  <Image
+                    src={
+                      typeof card.image === "string"
+                        ? card.image
+                        : "/placeholder-card.png"
+                    }
+                    alt={card.name}
+                    fill
+                    className="object-cover"
+                  />
+                </div>
+                <span className="flex-1 truncate text-xs">{card.name}</span>
+                <span className="text-xs text-muted-foreground flex-shrink-0">
+                  ×{quantity}
+                </span>
+                <span className="text-xs font-medium flex-shrink-0">
+                  {formatVND(subtotal)}
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
+
+export default function CheckoutPage() {
+  return (
+    <div className="min-h-screen bg-background">
+      <div className="starfield" />
+      <Navbar />
+      <Suspense fallback={<div className="container mx-auto px-4 py-24 text-center">Loading...</div>}>
+        <CheckoutContent />
+      </Suspense>
     </div>
   );
-};
-
-export default Checkout;
+}

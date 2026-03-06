@@ -1,22 +1,22 @@
 "use client";
 
-import {
-  createContext,
-  useContext,
-  useState,
-  ReactNode,
-  useMemo,
-  useCallback,
-} from "react";
-import { useRouter } from "next/navigation";
-import type { AuthUser } from "@/lib/auth-utils";
 import { clearStoredAuth } from "@/lib/api-client";
+import type { AuthUser } from "@/lib/auth-utils";
+import { useRouter } from "next/navigation";
+import {
+    createContext,
+    ReactNode,
+    useCallback,
+    useContext,
+    useMemo, 
+    useState,
+} from "react";
 
 // ── User shape used throughout the app ───────────────────────────────────────
 
 export interface User {
   id: string;
-  customerId: number;
+  accountId: number;
   username: string; // maps to AuthUser.name
   email: string;
   phoneNumber?: string | null;
@@ -45,8 +45,8 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function mapAuthUser(au: AuthUser): User {
   return {
-    id: String(au.customerId),
-    customerId: au.customerId,
+    id: String(au.accountId),
+    accountId: au.accountId,
     username: au.name,
     email: au.email,
     phoneNumber: au.phoneNumber,

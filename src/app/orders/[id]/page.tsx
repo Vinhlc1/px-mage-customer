@@ -1,15 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Navbar from "@/components/Navbar";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Lock, Package } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { getOrderById, type BeOrder } from "@/lib/api/orders";
 import { formatVND } from "@/lib/utils";
+import { ArrowLeft, Lock, Package } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 function orderStatusVariant(
   status: string
@@ -172,10 +171,10 @@ export default function OrderDetailPage({
                       </Badge>
                     </div>
                   </div>
-                  {order.paymentMethod && (
+                  {order.paymentGateway && (
                     <div>
                       <p className="text-muted-foreground">Phương thức thanh toán</p>
-                      <p className="font-medium mt-1">{order.paymentMethod}</p>
+                      <p className="font-medium mt-1">{order.paymentGateway}</p>
                     </div>
                   )}
                   {order.shippingAddress && (
@@ -184,12 +183,7 @@ export default function OrderDetailPage({
                       <p className="font-medium mt-1">{order.shippingAddress}</p>
                     </div>
                   )}
-                  {order.notes && (
-                    <div className="sm:col-span-2">
-                      <p className="text-muted-foreground">Ghi chú</p>
-                      <p className="font-medium mt-1">{order.notes}</p>
-                    </div>
-                  )}
+
                 </div>
               </div>
 
@@ -206,15 +200,10 @@ export default function OrderDetailPage({
                         className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
                       >
                         <div>
-                          <p className="font-medium">Sản phẩm #{index + 1}</p>
+                          <p className="font-medium">{item.productName || `Sản phẩm #${index + 1}`}</p>
                           <p className="text-sm text-muted-foreground">
                             Số lượng: {item.quantity} × {formatVND(item.unitPrice)}
                           </p>
-                          {item.customText && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              Nội dung: {item.customText}
-                            </p>
-                          )}
                         </div>
                         <p className="font-semibold text-primary">
                           {formatVND(item.subtotal)}

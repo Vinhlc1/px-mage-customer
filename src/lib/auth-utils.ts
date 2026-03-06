@@ -6,7 +6,7 @@ export const USER_COOKIE = "pm_user";
 export const TOKEN_MAX_AGE_SECONDS = 60 * 60 * 24; // 24h fallback
 
 const authUserSchema = z.object({
-  customerId: z.number(),
+  accountId: z.number(),
   email: z.string().email(),
   name: z.string(),
   phoneNumber: z.string().nullable(),

@@ -1,42 +1,35 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
 import Navbar from "@/components/Navbar";
-import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { CreditCard, Minus, Plus, ShoppingCart, Zap, ArrowLeft, Package } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
 import {
-  getCardTemplate,
-  getCardPriceTiersByTemplate,
-  getPriceForQuantity,
-  mapCardTemplate,
-  BeCardPriceTier,
+    getCardTemplate,
+    mapCardTemplate,
 } from "@/lib/api/cards";
-import { Card } from "@/types/card";
 import { formatVND } from "@/lib/utils";
+import { Card } from "@/types/card";
+import { ArrowLeft, CreditCard, Minus, Package, Plus, Zap } from "lucide-react";
+import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 const PurchasePage = () => {
   const params = useParams();
   const cardId = params?.cardId as string;
   const router = useRouter();
-  const { toast } = useToast();
-  const { addToCart } = useCart();
   const { isAuthenticated } = useAuth();
 
   const [card, setCard] = useState<Card | null>(null);
-  const [priceTiers, setPriceTiers] = useState<BeCardPriceTier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const unitPrice = getPriceForQuantity(priceTiers, quantity);
+  // For physical cards, the base price is returned directly
+  const unitPrice = card?.price || 0;
   const subtotal = unitPrice * quantity;
   const total = subtotal;
 
@@ -46,32 +39,16 @@ const PurchasePage = () => {
     if (isNaN(id)) { setNotFound(true); setIsLoading(false); return; }
 
     setIsLoading(true);
-    Promise.all([
-      getCardTemplate(id),
-      getCardPriceTiersByTemplate(id).catch(() => [] as BeCardPriceTier[]),
-    ])
-      .then(([tpl, tiers]) => {
-        const sortedTiers = [...tiers].sort((a, b) => a.minQuantity - b.minQuantity);
-        setPriceTiers(sortedTiers);
-        const defaultPrice = sortedTiers.length > 0 ? Number(sortedTiers[0].pricePerUnit) : 0;
-        setCard(mapCardTemplate(tpl, defaultPrice));
-      })
+    getCardTemplate(id)
+      .then((tpl) => setCard(mapCardTemplate(tpl)))
       .catch(() => setNotFound(true))
       .finally(() => setIsLoading(false));
   }, [cardId]);
 
-  const handleAddToCart = () => {
-    if (!card) return;
-    if (!isAuthenticated) { router.push(`/login?redirect=/purchase/${cardId}`); return; }
-    addToCart({ ...card, price: unitPrice }, quantity);
-    toast({ title: "Added to Cart! 🛒", description: `${quantity}× ${card.name} added to your cart` });
-  };
-
   const handleBuyNow = () => {
     if (!card) return;
     if (!isAuthenticated) { router.push(`/login?redirect=/purchase/${cardId}`); return; }
-    addToCart({ ...card, price: unitPrice }, quantity);
-    router.push("/checkout");
+    router.push(`/checkout?templateId=${cardId}&quantity=${quantity}`);
   };
 
   // ── Loading ───────────────────────────────────────────────────────────────
@@ -151,12 +128,6 @@ const PurchasePage = () => {
                 <li className="flex items-center gap-2">✓ Unique card ID authentication</li>
                 <li className="flex items-center gap-2">✓ Collectible artwork</li>
               </ul>
-
-              {card.stock !== undefined && card.stock < 10 && (
-                <p className="text-sm text-destructive font-medium">
-                  ⚠ Only {card.stock} remaining in stock!
-                </p>
-              )}
             </div>
           </div>
 
@@ -166,36 +137,8 @@ const PurchasePage = () => {
               <p className="text-sm text-muted-foreground uppercase tracking-wide font-medium mb-1">Unit Price</p>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-bold text-primary">{formatVND(unitPrice)}</span>
-                {priceTiers.length > 1 && (
-                  <span className="text-xs text-muted-foreground mb-1">price varies by qty</span>
-                )}
               </div>
             </div>
-
-            {/* Price tiers info */}
-            {priceTiers.length > 1 && (
-              <div className="bg-muted/40 rounded-lg p-3 space-y-1.5">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Volume Pricing</p>
-                {priceTiers.map((tier) => (
-                  <div
-                    key={tier.tierId}
-                    className={`flex justify-between text-sm px-1 rounded transition-colors ${
-                      quantity >= tier.minQuantity &&
-                      (tier.maxQuantity === null || quantity <= tier.maxQuantity)
-                        ? "text-primary font-semibold"
-                        : "text-muted-foreground"
-                    }`}
-                  >
-                    <span>
-                      {tier.maxQuantity
-                        ? `${tier.minQuantity}–${tier.maxQuantity} units`
-                        : `${tier.minQuantity}+ units`}
-                    </span>
-                    <span>{formatVND(Number(tier.pricePerUnit))} / card</span>
-                  </div>
-                ))}
-              </div>
-            )}
 
             {/* Quantity */}
             <div className="space-y-2">
@@ -241,14 +184,6 @@ const PurchasePage = () => {
               >
                 <Zap className="w-5 h-5 mr-2" />
                 Buy Now
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full text-lg py-6"
-                onClick={handleAddToCart}
-              >
-                <ShoppingCart className="w-5 h-5 mr-2" />
-                Add to Cart
               </Button>
             </div>
 

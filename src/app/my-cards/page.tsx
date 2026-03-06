@@ -1,31 +1,30 @@
 "use client";
 
-import { useState } from "react";
 import Navbar from "@/components/Navbar";
+import NFCScanModal from "@/components/NFCScanModal";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { useCollection } from "@/contexts/CollectionContext";
+import { toast } from "@/hooks/use-toast";
+import { BeInventoryItem } from "@/lib/api/collections";
+import { Card } from "@/types/card";
+import { Lock, ShoppingBag, Waves } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import NFCScanModal from "@/components/NFCScanModal";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card } from "@/types/card";
-import { useCollection } from "@/contexts/CollectionContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { Waves, ShoppingBag, Lock } from "lucide-react";
-import { toast } from "@/hooks/use-toast";
-import { BePhysicalCard } from "@/lib/api/collections";
+import { useState } from "react";
 
-/** Map a BE physical card to the FE Card type */
-function mapPhysicalCard(c: BePhysicalCard): Card {
+/** Map a BE inventory item to the FE Card type */
+function mapInventoryItem(c: BeInventoryItem): Card {
   return {
-    id: String(c.cardId),
-    cardId: c.cardId,
-    nfcUuid: c.nfcUuid,
-    name: `Card #${c.cardId}`,
+    id: String(c.inventoryItemId),
+    cardId: c.cardTemplateId,
+    name: c.productName || `Card #${c.cardTemplateId}`,
     mythology: "PixelMage",
     image: "/placeholder-card.png",
     rarity: "Common",
     price: 0,
-    nfcEnabled: true,
+    nfcEnabled: c.source === "NFC_SCAN",
   };
 }
 
@@ -37,7 +36,7 @@ const MyCards = () => {
   const [isNFCScanModalOpen, setIsNFCScanModalOpen] = useState(false);
 
   // Use real owned cards from BE
-  const purchasedCards: Card[] = ownedCards.map(mapPhysicalCard);
+  const purchasedCards: Card[] = ownedCards.map(mapInventoryItem);
 
   const handleNFCScan = (card: Card) => {
     setSelectedCard(card);
@@ -62,8 +61,8 @@ const MyCards = () => {
           <p className="text-xl text-muted-foreground mb-8">
             Bạn cần đăng nhập để xem thẻ của mình
           </p>
-          <Button 
-            size="lg" 
+          <Button
+            size="lg"
             onClick={() => router.push("/")}
             className="bg-primary hover:bg-primary/90"
           >
@@ -152,7 +151,7 @@ const MyCards = () => {
                   )}
 
                   <div className="text-xs text-muted-foreground text-center pt-2 border-t border-border">
-                    Đã mua • ${card.price}
+                    {card.nfcEnabled ? "Đã xác thực" : "Chưa xác thực"}
                   </div>
                 </div>
               </div>
@@ -165,8 +164,8 @@ const MyCards = () => {
             <p className="text-xl text-muted-foreground mb-8">
               Bạn chưa mua thẻ nào. Hãy khám phá marketplace!
             </p>
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               onClick={() => router.push("/marketplace")}
               className="bg-primary hover:bg-primary/90"
             >

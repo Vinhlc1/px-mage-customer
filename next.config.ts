@@ -1,5 +1,5 @@
-import type { NextConfig } from "next";
 import bundleAnalyzer from "@next/bundle-analyzer";
+import type { NextConfig } from "next";
 
 const withBundleAnalyzer = bundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -8,11 +8,11 @@ const withBundleAnalyzer = bundleAnalyzer({
 const nextConfig: NextConfig = {
   /* config options here */
   reactCompiler: true,
-  
+
   // Performance optimizations
   compress: true,
   poweredByHeader: false,
-  
+
   // Modern optimizations
   experimental: {
     optimizePackageImports: ["lucide-react", "@radix-ui/react-icons"],
@@ -20,13 +20,13 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "2mb",
     },
   },
-  
+
   turbopack: {
     resolveAlias: {
       canvas: "false",
     },
   },
-  
+
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
@@ -37,10 +37,16 @@ const nextConfig: NextConfig = {
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: '**.example.com',
-        port: '',
-        pathname: '/images/**',
+        protocol: "http",
+        hostname: "localhost",
+        port: "8080",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "**.example.com",
+        port: "",
+        pathname: "/images/**",
       },
     ],
   },

@@ -2,58 +2,63 @@ import { apiGet, apiPost } from "../api-client";
 
 export interface BeOrderItem {
   orderItemId: number;
+  productName: string;
+  productType: "SINGLE_CARD" | "CARD_PACK" | "BUNDLE";
   quantity: number;
   unitPrice: number;
   subtotal: number;
-  customText: string | null;
-  createdAt: string;
-  updatedAt: string;
+}
+
+export interface BePaymentInfo {
+  payUrl?: string; // used for VNPay
 }
 
 export interface BeOrder {
   orderId: number;
-  orderDate: string;
-  status: "PENDING" | "PROCESSING" | "COMPLETED" | "CANCELLED";
-  totalAmount: number;
-  shippingAddress: string | null;
-  paymentMethod: string | null;
+  orderCode: string; // from BE? or use orderId
+  paymentGateway: "COD" | "VNPAY";
   paymentStatus: "PENDING" | "PAID" | "FAILED" | "REFUNDED";
-  notes: string | null;
+  status: "PENDING" | "CONFIRMED" | "SHIPPING" | "DELIVERED" | "CANCELLED";
+  totalAmount: number;
+  shippingAddress: string;
+  shippingPhone: string;
+  voucherCode: string | null;
   createdAt: string;
-  updatedAt: string;
   orderItems: BeOrderItem[];
+  payment?: BePaymentInfo;
 }
 
 export interface CreateOrderItemRequest {
-  cardId: number;
+  cardTemplateId: number;
+  productName: string;
+  productType: "SINGLE_CARD" | "CARD_PACK" | "BUNDLE";
   quantity: number;
   unitPrice: number;
-  subtotal: number;
-  customText?: string;
 }
 
 export interface CreateOrderRequest {
-  customerId: number;
-  orderDate: string;
-  status: string;
-  totalAmount: number;
+  paymentGateway: "COD" | "VNPAY";
   shippingAddress: string;
-  paymentMethod: string;
-  paymentStatus: string;
-  notes?: string;
-  orderItems: CreateOrderItemRequest[];
+  shippingPhone: string;
+  voucherCode?: string;
+  items: CreateOrderItemRequest[];
 }
 
 export async function createOrder(req: CreateOrderRequest): Promise<BeOrder> {
   return apiPost<BeOrder>("/api/orders", req);
 }
 
-export async function getOrdersByCustomer(
-  customerId: number
-): Promise<BeOrder[]> {
-  return apiGet<BeOrder[]>(`/api/orders/customer/${customerId}`);
+export async function getMyOrders(): Promise<BeOrder[]> {
+  const result = await apiGet<any>("/api/orders/my");
+  return result?.content || result || [];
 }
 
 export async function getOrderById(id: number): Promise<BeOrder> {
   return apiGet<BeOrder>(`/api/orders/${id}`);
+}
+
+export async function cancelOrder(id: number): Promise<void> {
+  // Using apiPost or apiFetch for PATCH
+  const { apiFetch } = await import("../api-client");
+  await apiFetch(`/api/orders/${id}/cancel`, { method: "PATCH" });
 }

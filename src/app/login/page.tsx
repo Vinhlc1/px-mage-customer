@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { Moon, Mail, Lock, User, Eye, EyeOff, Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useAuth } from "@/contexts/AuthContext";
 import type { AuthUser } from "@/lib/auth-utils";
+import { Eye, EyeOff, Lock, Mail, Moon, Phone, User } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -210,7 +210,7 @@ export default function LoginPage() {
                   type="button"
                   variant="outline"
                   className="w-full flex items-center gap-2"
-                  onClick={() => window.location.href = "http://localhost:8386/oauth2/authorization/google"}
+                  onClick={() => window.location.href = "http://localhost:8080/oauth2/authorization/google"}
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
@@ -331,7 +331,7 @@ export default function LoginPage() {
                   type="button"
                   variant="outline"
                   className="w-full flex items-center gap-2"
-                  onClick={() => window.location.href = "http://localhost:8386/oauth2/authorization/google"}
+                  onClick={() => window.location.href = "http://localhost:8080/oauth2/authorization/google"}
                 >
                   <svg className="h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                     <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />

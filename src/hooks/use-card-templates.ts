@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card } from "@/types/card";
-import { fetchCardTemplatesWithPrices } from "@/lib/api/cards";
 import { toast } from "@/hooks/use-toast";
+import { fetchCardTemplates } from "@/lib/api/cards";
+import { Card } from "@/types/card";
+import { useEffect, useState } from "react";
 
 interface UseCardTemplatesResult {
   cards: Card[];
@@ -22,7 +22,7 @@ export function useCardTemplates(): UseCardTemplatesResult {
     let cancelled = false;
     setIsLoading(true);
 
-    fetchCardTemplatesWithPrices()
+    fetchCardTemplates()
       .then((result) => {
         if (!cancelled) setCards(result);
       })

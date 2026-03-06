@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { apiFetch, Res } from "@/app/api/orchestra";
+import { z } from "zod";
 
 const registerRequestSchema = z.object({
   email: z.string().email(),
@@ -13,7 +13,7 @@ export async function POST(request: Request) {
   const parsed = registerRequestSchema.safeParse(body);
   if (!parsed.success) return Res.badRequest("Invalid registration data.");
 
-  const { ok, status, data, error } = await apiFetch("/accounts/registration", {
+  const { ok, status, data, error } = await apiFetch("/auth/register", {
     method: "POST",
     body: JSON.stringify({
       email: parsed.data.email,
