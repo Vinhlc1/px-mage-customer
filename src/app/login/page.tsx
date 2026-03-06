@@ -122,14 +122,14 @@ export default function LoginPage() {
             <Moon className="w-8 h-8 text-primary" />
             <span className="text-2xl font-serif text-gradient-gold">PixelMage</span>
           </Link>
-          <h1 className="text-3xl font-serif text-gradient-gold">Chào mừng trở lại</h1>
+          <h1 className="text-3xl font-serif text-gradient-gold tracking-widest drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">Chào mừng trở lại</h1>
           <p className="text-muted-foreground mt-2 text-sm">
             Đăng nhập hoặc tạo tài khoản mới để bắt đầu hành trình của bạn.
           </p>
         </div>
 
         {/* Card */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-xl">
+        <div className="rounded-2xl p-6 card-glass">
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Đăng nhập</TabsTrigger>

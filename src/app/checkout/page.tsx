@@ -434,7 +434,7 @@ function CheckoutContent() {
   return (
     <section className="container mx-auto px-4 py-8 sm:py-12">
       <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2 text-center">
+        <h1 className="text-3xl sm:text-4xl font-serif font-bold mb-2 text-center text-gradient-gold tracking-widest drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
           Checkout
         </h1>
         <p className="text-muted-foreground text-center text-sm mb-8">
@@ -478,7 +478,7 @@ function CheckoutContent() {
                 1 item
               </p>
               <div className="flex items-center gap-2 text-sm">
-                <div className="relative w-8 h-10 flex-shrink-0 rounded overflow-hidden">
+                <div className="relative w-8 h-10 shrink-0 rounded overflow-hidden">
                   <Image
                     src={
                       typeof card.image === "string"
@@ -491,10 +491,10 @@ function CheckoutContent() {
                   />
                 </div>
                 <span className="flex-1 truncate text-xs">{card.name}</span>
-                <span className="text-xs text-muted-foreground flex-shrink-0">
+                <span className="text-xs text-muted-foreground shrink-0">
                   ×{quantity}
                 </span>
-                <span className="text-xs font-medium flex-shrink-0">
+                <span className="text-xs font-medium shrink-0">
                   {formatVND(subtotal)}
                 </span>
               </div>

@@ -1,16 +1,16 @@
 'use client';
 
-import { useState, useMemo } from "react";
-import Navbar from "@/components/Navbar";
-import { Button } from "@/components/ui/button";
-import { RarityFilter } from "@/components/RarityFilter";
 import { CardGrid } from "@/components/CardGrid";
 import { CardModals } from "@/components/CardModals";
-import { Sparkles } from "lucide-react";
+import Navbar from "@/components/Navbar";
+import { RarityFilter } from "@/components/RarityFilter";
+import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { useCollection } from "@/contexts/CollectionContext";
-import { useCardTemplates } from "@/hooks/use-card-templates";
 import { useCardInteractions } from "@/hooks/use-card-interactions";
+import { useCardTemplates } from "@/hooks/use-card-templates";
+import { Sparkles } from "lucide-react";
+import { useMemo, useState } from "react";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -40,23 +40,15 @@ export default function Home() {
       <Navbar />
 
       {/* Hero Section */}
-      <section className="relative min-h-150 flex items-center justify-center overflow-hidden">
-        <div
-          className="absolute inset-0 z-0"
-          style={{
-            backgroundImage: `url(/assets/hero-bg.jpg)`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-          }}
-        >
-          <div className="absolute inset-0 bg-linear-to-b from-background/80 via-background/60 to-background" />
-        </div>
+      <section className="relative min-h-[85vh] flex items-center justify-center overflow-hidden">
+        {/* Glow behind hero text */}
+        <div className="absolute inset-0 z-0 bg-[radial-gradient(circle_at_center,var(--tw-gradient-stops))] from-primary/15 via-background/80 to-background pointer-events-none" />
 
         <div className="container mx-auto px-4 relative z-10 text-center">
-          <p className="text-secondary text-sm sm:text-base md:text-lg mb-3 sm:mb-4 animate-float">
+          <p className="text-secondary text-sm sm:text-base md:text-lg mb-3 sm:mb-4 animate-float tracking-widest uppercase">
             Bộ sưu tập thẻ NFC huyền thoại
           </p>
-          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-4 sm:mb-6 text-shadow-glow leading-tight">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-serif font-bold mb-4 sm:mb-6 text-shadow-glow tracking-widest text-gradient-gold leading-tight">
             Khám phá hành trình<br />của riêng bạn
           </h1>
           <Button

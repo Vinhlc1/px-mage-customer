@@ -1,20 +1,20 @@
-import type { Metadata } from "next";
-import { Inter, Cinzel } from "next/font/google";
-import "./globals.css";
-import { Providers } from "./providers";
 import { getServerAuth } from "@/lib/auth";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
+import type { Metadata } from "next";
+import { Cinzel_Decorative, Inter } from "next/font/google";
+import "./globals.css";
+import { Providers } from "./providers";
 
 const inter = Inter({
   variable: "--font-inter",
   subsets: ["latin"],
 });
 
-const cinzel = Cinzel({
+const cinzel = Cinzel_Decorative({
   variable: "--font-cinzel",
   subsets: ["latin"],
-  weight: ["400", "600", "700"],
+  weight: ["400", "700", "900"],
 });
 
 export const metadata: Metadata = {

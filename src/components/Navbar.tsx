@@ -46,8 +46,8 @@ const Navbar = () => {
       {/* Main Navbar */}
       <nav className={`sticky top-0 z-50 border-b transition-all duration-300 ${
           scrolled
-            ? "bg-background/60 backdrop-blur-md border-border/50 shadow-lg shadow-black/10"
-            : "bg-background border-border"
+            ? "bg-background/40 backdrop-blur-xl border-white/5 shadow-[0_4px_30px_rgba(0,0,0,0.5)]"
+            : "bg-background/0 border-transparent"
         }`}>
         <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 flex items-center justify-between">
           <div className="flex items-center gap-2 sm:gap-3">
@@ -60,8 +60,8 @@ const Navbar = () => {
               </SheetTrigger>
               <SheetContent side="left" className="w-70 sm:w-[320px]">
                 <SheetHeader className="mb-6">
-                  <SheetTitle className="flex items-center gap-2 text-2xl font-serif text-gradient-gold">
-                    <Moon className="w-7 h-7 text-primary" />
+                  <SheetTitle className="flex items-center gap-2 text-2xl font-serif text-gradient-gold tracking-widest drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">
+                    <Moon className="w-7 h-7" />
                     PixelMage
                   </SheetTitle>
                 </SheetHeader>
@@ -128,9 +128,9 @@ const Navbar = () => {
             </Sheet>
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-1.5 sm:gap-2">
-              <Moon className="w-6 h-6 sm:w-8 sm:h-8 text-primary" />
-              <span className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-gradient-gold">PixelMage</span>
+            <Link href="/" className="flex items-center gap-1.5 sm:gap-2 group">
+              <Moon className="w-6 h-6 sm:w-8 sm:h-8 text-primary group-hover:drop-shadow-[0_0_10px_rgba(212,175,55,0.8)] transition-all" />
+              <span className="text-lg sm:text-xl md:text-2xl font-serif font-bold text-gradient-gold tracking-widest drop-shadow-[0_0_8px_rgba(212,175,55,0.4)]">PixelMage</span>
             </Link>
           </div>
 

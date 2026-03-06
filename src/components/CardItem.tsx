@@ -1,9 +1,9 @@
-import { Card } from "@/types/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Waves, Lock } from "lucide-react";
-import Image from "next/image";
 import { formatVND } from "@/lib/utils";
+import { Card } from "@/types/card";
+import { Lock, Waves } from "lucide-react";
+import Image from "next/image";
 
 interface CardItemProps {
   card: Card;
@@ -21,8 +21,8 @@ const rarityColors = {
 
 const CardItem = ({ card, onClick, onNFCScan, hasPurchased = false }: CardItemProps) => {
   return (
-    <div className="group relative rounded-xl overflow-hidden card-glow bg-card border border-border transition-transform hover:scale-105">
-      <div 
+    <div className="group relative rounded-xl overflow-hidden card-glow card-glass transition-transform hover:scale-105">
+      <div
         onClick={onClick}
         className="cursor-pointer"
       >
@@ -45,7 +45,7 @@ const CardItem = ({ card, onClick, onNFCScan, hasPurchased = false }: CardItemPr
         </div>
         </div>
       </div>
-      
+
       <div className="p-3 sm:p-4 space-y-2">
         <h3 className="font-serif text-lg sm:text-xl font-semibold text-foreground line-clamp-1">
           {card.name}
@@ -57,15 +57,15 @@ const CardItem = ({ card, onClick, onNFCScan, hasPurchased = false }: CardItemPr
             <span className="text-xs text-destructive">Only {card.stock} left!</span>
           )}
         </div>
-        
+
         {card.nfcEnabled && onNFCScan && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
               onNFCScan();
             }}
-            className={hasPurchased 
-              ? "w-full bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 text-xs sm:text-sm" 
+            className={hasPurchased
+              ? "w-full bg-primary/20 hover:bg-primary/30 text-primary border border-primary/50 text-xs sm:text-sm"
               : "w-full bg-muted/50 text-muted-foreground border border-border cursor-not-allowed text-xs sm:text-sm"
             }
             size="sm"
